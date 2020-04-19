@@ -1,24 +1,43 @@
 import argparse
+import os
+import pathlib
 import sys
 
-
-def log(message):
-    print(message, file=sys.stderr, flush=True)
-
-
-class UserError(Exception):
-    def __init__(self, message, *args):
-        super().__init__(message.format(*args))
+from archive.compress import archive_file
+from archive.extract import extract_file
+from archive.util import log, UserError
 
 
 def parse_args():
     parser = argparse.ArgumentParser()
 
+    parser.add_argument(
+        '-e',
+        '--extract',
+        action='store_true')
+
+    parser.add_argument(
+        'source_path',
+        type=pathlib.Path)
+
     return parser.parse_args()
 
 
-def main():
-    pass
+def extract_command(source_path):
+    extract_file(os.path.normpath(source_path))
+
+
+def compress_command(source_path):
+    archive_file(os.path.normpath(source_path))
+
+
+def main(extract, source_path):
+    source_path = os.path.normpath(source_path)
+
+    if extract:
+        extract_file(source_path)
+    else:
+        archive_file(source_path)
 
 
 def entry_point():
