@@ -17,7 +17,8 @@ def parse_args():
         action='store_true')
 
     parser.add_argument(
-        'source_path',
+        'source_paths',
+        nargs='+',
         type=pathlib.Path)
 
     return parser.parse_args()
@@ -31,13 +32,14 @@ def compress_command(source_path):
     archive_file(os.path.normpath(source_path))
 
 
-def main(extract, source_path):
-    source_path = os.path.normpath(source_path)
+def main(extract, source_paths):
+    for i in source_paths:
+        source_path = os.path.normpath(i)
 
-    if extract:
-        extract_file(source_path)
-    else:
-        archive_file(source_path)
+        if extract:
+            extract_file(source_path)
+        else:
+            archive_file(source_path)
 
 
 def entry_point():
