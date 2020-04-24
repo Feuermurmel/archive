@@ -24,14 +24,6 @@ def parse_args():
     return parser.parse_args()
 
 
-def extract_command(source_path):
-    extract_file(os.path.normpath(source_path))
-
-
-def compress_command(source_path):
-    archive_file(os.path.normpath(source_path))
-
-
 def main(extract, source_paths):
     for i in source_paths:
         source_path = os.path.normpath(i)

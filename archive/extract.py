@@ -1,62 +1,8 @@
-#! /usr/bin/env python3
-
-import sys
 import os
-import tempfile
-import subprocess
-import itertools
 import shutil
+import tempfile
 
-from archive.util import UserError
-
-
-def log(msg, *args):
-    if args:
-        msg = msg.format(*args)
-
-    print(msg, file=sys.stderr)
-
-
-def command(*args, input=None):
-    proc = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
-    res, _ = proc.communicate(input)
-
-    if proc.returncode:
-        args_str = ' '.join(args)
-
-        raise UserError(f'Command failed: {args_str}')
-
-    return res
-
-
-def find_unused_name(base_path):
-    """
-    Find and return an unused path in the same directory and same extension
-    as the given path, but maybe with a number added to the base name.
-    """
-
-    base_path, base_name = os.path.split(base_path)
-    base_name, ext = os.path.splitext(base_name)
-
-    for i in itertools.count(1):
-        if i == 1:
-            base_name_count = base_name
-        else:
-            base_name_count = '{}-{}'.format(base_name, i)
-
-        name = base_name_count + ext
-        path = os.path.join(base_path, name)
-
-        if not os.path.exists(path):
-            return path
-
-
-def move_to_dest(source_dir, dest_dir, base_name):
-    move_dest = find_unused_name(os.path.join(dest_dir, base_name))
-
-    log('Moving extracted files to {} ...', move_dest)
-
-    os.rename(source_dir, move_dest)
+from archive.util import UserError, command, move_to_dest, log
 
 
 def is_alias(path):
@@ -76,11 +22,10 @@ def extract_disk_image(image_path):
         os.mkdir(copy_root)
 
         try:
-            log('Mounting {} ...', image_path)
+            log(f'Mounting {image_path} ...')
 
             # Blindly accepting any license agreement.
-            command('hdiutil', 'mount', '-readonly', '-nobrowse', '-mountroot',
-                    mount_root, image_path, input='Y\n'.encode())
+            command('hdiutil', 'mount', '-readonly', '-nobrowse', '-mountroot', mount_root, image_path, input='Y\n'.encode())
 
             partitions = os.listdir(mount_root)
 
@@ -90,7 +35,7 @@ def extract_disk_image(image_path):
 
                 os.mkdir(copy_path)
 
-                log('Copying partition {} ...', i)
+                log(f'Copying partition {i} ...')
 
                 for j in os.listdir(mount_path):
                     member_path = os.path.join(mount_path, j)
@@ -99,7 +44,7 @@ def extract_disk_image(image_path):
                     if j.startswith('.') or os.path.islink(
                             member_path) or is_alias(
                             member_path) or is_invisible(member_path):
-                        log('Skipping {}', j)
+                        log(f'Skipping {j}')
                     else:
                         command('ditto', member_path,
                                 os.path.join(copy_path, j))
@@ -125,8 +70,7 @@ def extract_disk_image(image_path):
                     move_source = os.path.join(partition_path, member)
                     move_dest_name = member
 
-            move_to_dest(move_source, os.path.dirname(image_path),
-                         move_dest_name)
+            move_to_dest(move_source, os.path.dirname(image_path), move_dest_name)
         finally:
             log('Unmounting image ...')
 
@@ -143,7 +87,7 @@ def prepare_contents(extract_dir):
     def fn():
         for i in os.listdir(extract_dir):
             if i.startswith('.'):
-                log('Removing {}', i)
+                log(f'Removing {i}')
 
                 path = os.path.join(extract_dir, i)
 
@@ -163,7 +107,7 @@ def extract_zip_archive(archive_path):
 
         os.mkdir(extract_dir)
 
-        log('Extracting file {} ...', archive_path)
+        log(f'Extracting file {archive_path} ...')
 
         command('ditto', '-x', '-k', archive_path, extract_dir)
 
@@ -187,7 +131,7 @@ def extract_tar_archive(archive_path):
 
         os.mkdir(extract_dir)
 
-        log('Extracting file {} ...', archive_path)
+        log(f'Extracting file {archive_path} ...')
 
         command('tar', '-x', '-C', extract_dir, '-f', archive_path)
 
@@ -211,10 +155,9 @@ def extract_tar_gz_archive(archive_path):
         decompress_file = os.path.join(temp_dir, 'decompressed')
         extract_dir = os.path.join(temp_dir, 'extracted')
 
-        log('Decompressing file {} ...', archive_path)
+        log(f'Decompressing file {archive_path} ...')
 
-        command('bash', '-c', 'gzip -d < "$0" > "$1"', archive_path,
-                decompress_file)
+        command('bash', '-c', 'gzip -d < "$0" > "$1"', archive_path, decompress_file)
 
         os.mkdir(extract_dir)
 
