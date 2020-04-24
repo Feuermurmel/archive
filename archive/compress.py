@@ -4,7 +4,7 @@ import tempfile
 from archive.util import command, move_to_dest, log
 
 
-def archive_file(path):
+def archive_file(path, destination_dir):
     with tempfile.TemporaryDirectory() as temp_dir:
         archive_file = os.path.join(temp_dir, 'archive.zip')
 
@@ -24,7 +24,7 @@ def archive_file(path):
 
         command(*args())
 
-        move_to_dest(archive_file, os.path.dirname(path), os.path.basename(path) + '.zip')
+        move_to_dest(archive_file, destination_dir, os.path.basename(path) + '.zip')
 
     log('Moving original file to the trash ...')
 

@@ -14,7 +14,15 @@ def parse_args():
     parser.add_argument(
         '-e',
         '--extract',
-        action='store_true')
+        action='store_true',
+        help='Try to extract an archive instead of creating one.')
+
+    parser.add_argument(
+        '-d',
+        '--destination-dir',
+        type=pathlib.Path,
+        help='Place the archive file or extracted files into this directory. '
+             'Default to the directory that contains the source.')
 
     parser.add_argument(
         'source_paths',
@@ -24,14 +32,17 @@ def parse_args():
     return parser.parse_args()
 
 
-def main(extract, source_paths):
+def main(extract, source_paths, destination_dir):
     for i in source_paths:
         source_path = os.path.normpath(i)
 
+        if destination_dir is None:
+            destination_dir = os.path.dirname(source_path)
+
         if extract:
-            extract_file(source_path)
+            extract_file(source_path, str(destination_dir))
         else:
-            archive_file(source_path)
+            archive_file(source_path, str(destination_dir))
 
 
 def entry_point():

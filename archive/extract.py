@@ -101,7 +101,7 @@ def prepare_contents(extract_dir):
     return list(fn())
 
 
-def extract_zip_archive(archive_path):
+def extract_zip_archive(archive_path, destination_dir):
     with tempfile.TemporaryDirectory() as temp_dir:
         extract_dir = os.path.join(temp_dir, 'extracted')
 
@@ -122,10 +122,10 @@ def extract_zip_archive(archive_path):
             move_source = os.path.join(extract_dir, content)
             move_dest_name = content
 
-        move_to_dest(move_source, os.path.dirname(archive_path), move_dest_name)
+        move_to_dest(move_source, destination_dir, move_dest_name)
 
 
-def extract_tar_archive(archive_path):
+def extract_tar_archive(archive_path, destination_dir):
     with tempfile.TemporaryDirectory() as temp_dir:
         extract_dir = os.path.join(temp_dir, 'extracted')
 
@@ -146,11 +146,11 @@ def extract_tar_archive(archive_path):
             move_source = os.path.join(extract_dir, content)
             move_dest_name = content
 
-        move_to_dest(move_source, os.path.dirname(archive_path), move_dest_name)
+        move_to_dest(move_source, destination_dir, move_dest_name)
 
 
 # FIXME: Convert all extraction function into classes to reuse common parts by inheritance.
-def extract_tar_gz_archive(archive_path):
+def extract_tar_gz_archive(archive_path, destination_dir):
     with tempfile.TemporaryDirectory() as temp_dir:
         decompress_file = os.path.join(temp_dir, 'decompressed')
         extract_dir = os.path.join(temp_dir, 'extracted')
@@ -176,7 +176,7 @@ def extract_tar_gz_archive(archive_path):
             move_source = os.path.join(extract_dir, content)
             move_dest_name = content
 
-        move_to_dest(move_source, os.path.dirname(archive_path), move_dest_name)
+        move_to_dest(move_source, destination_dir, move_dest_name)
 
 
 def get_handler(path):
@@ -193,8 +193,8 @@ def get_handler(path):
     raise UserError(f'Unknown file type: {path}')
 
 
-def extract_file(path):
-    get_handler(path)(path)
+def extract_file(path, destination_dir):
+    get_handler(path)(path, destination_dir)
 
     log('Moving original file to the trash ...')
 
