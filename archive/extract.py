@@ -179,6 +179,7 @@ def extract_tar_gz_archive(archive_path, destination_dir):
 def get_handler(path):
     handlers = [
         (extract_zip_archive, '.zip .jar'),
+        (extract_tar_archive, '.tar'),
         (extract_tar_gz_archive, '.tar.gz .tgz'),
         (extract_disk_image, '.iso .dmg .sparseimage .sparsebundle')]
 
