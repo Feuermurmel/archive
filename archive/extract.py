@@ -13,7 +13,7 @@ def is_invisible(path):
     return int(command('GetFileInfo', '-av', path).decode()) == 1
 
 
-def extract_disk_image(image_path):
+def extract_disk_image(image_path, destination_dir):
     with tempfile.TemporaryDirectory() as temp_dir:
         mount_root = os.path.join(temp_dir, 'mounts')
         copy_root = os.path.join(temp_dir, 'extracted')
@@ -41,13 +41,10 @@ def extract_disk_image(image_path):
                     member_path = os.path.join(mount_path, j)
 
                     # Ignore all the crap put into the average disk image.
-                    if j.startswith('.') or os.path.islink(
-                            member_path) or is_alias(
-                            member_path) or is_invisible(member_path):
+                    if j.startswith('.') or os.path.islink( member_path) or is_alias(member_path) or is_invisible(member_path):
                         log(f'Skipping {j}')
                     else:
-                        command('ditto', member_path,
-                                os.path.join(copy_path, j))
+                        command('ditto', member_path, os.path.join(copy_path, j))
 
             log('Moving items to destination folder ...')
 
@@ -70,7 +67,7 @@ def extract_disk_image(image_path):
                     move_source = os.path.join(partition_path, member)
                     move_dest_name = member
 
-            move_to_dest(move_source, os.path.dirname(image_path), move_dest_name)
+            move_to_dest(move_source, destination_dir, move_dest_name)
         finally:
             log('Unmounting image ...')
 

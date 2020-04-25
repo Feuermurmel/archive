@@ -22,3 +22,24 @@ def test_round_trip_zip(tmp_path):
     assert not archive_path.exists()
     assert (dir_path / 'foo').read_text() == 'foo'
     assert (dir_path / 'bar').read_text() == 'bar'
+
+
+def test_dmg(tmp_path):
+    src_path = tmp_path / 'src'
+    src_path.mkdir()
+
+    (src_path / 'foo').write_text('foo')
+    (src_path / 'bar').write_text('bar')
+
+    archive_path = tmp_path / 'image.dmg'
+    partition_name = 'Root Partition Name'
+
+    # Create a .dmg image.
+    subprocess.check_call(['hdiutil', 'create', '-volname', partition_name, '-srcfolder', str(src_path), '-ov', '-format', 'UDZO', str(archive_path)])
+
+    # Extract the image.
+    subprocess.check_call(['archive', '-e', str(archive_path)])
+
+    # Check that the files exist under the right paths.
+    assert (tmp_path / partition_name / 'foo').read_text() == 'foo'
+    assert (tmp_path / partition_name / 'bar').read_text() == 'bar'
