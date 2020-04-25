@@ -122,7 +122,7 @@ def extract_zip_archive(archive_path, destination_dir):
         move_to_dest(move_source, destination_dir, move_dest_name)
 
 
-def extract_tar_archive(archive_path, destination_dir):
+def extract_tar_archive(archive_path, destination_dir, compression_option=None):
     with tempfile.TemporaryDirectory() as temp_dir:
         extract_dir = os.path.join(temp_dir, 'extracted')
 
@@ -130,7 +130,13 @@ def extract_tar_archive(archive_path, destination_dir):
 
         log(f'Extracting file {archive_path} ...')
 
-        command('tar', '-x', '-C', extract_dir, '-f', archive_path)
+        def iter_args():
+            yield from ['tar', '-x', '-C', extract_dir, '-f', archive_path]
+
+            if compression_option is not None:
+                yield compression_option
+
+        command(*iter_args())
 
         contents = prepare_contents(extract_dir)
 
@@ -146,41 +152,15 @@ def extract_tar_archive(archive_path, destination_dir):
         move_to_dest(move_source, destination_dir, move_dest_name)
 
 
-# FIXME: Convert all extraction function into classes to reuse common parts by inheritance.
-def extract_tar_gz_archive(archive_path, destination_dir):
-    with tempfile.TemporaryDirectory() as temp_dir:
-        decompress_file = os.path.join(temp_dir, 'decompressed')
-        extract_dir = os.path.join(temp_dir, 'extracted')
-
-        log(f'Decompressing file {archive_path} ...')
-
-        command('bash', '-c', 'gzip -d < "$0" > "$1"', archive_path, decompress_file)
-
-        os.mkdir(extract_dir)
-
-        log('Extracting file ...')
-
-        command('tar', '-x', '-C', extract_dir, '-f', decompress_file)
-
-        contents = prepare_contents(extract_dir)
-
-        if len(contents) > 1:
-            move_source = extract_dir
-            move_dest_name, _ = os.path.splitext(os.path.basename(archive_path))
-        else:
-            content, = contents
-
-            move_source = os.path.join(extract_dir, content)
-            move_dest_name = content
-
-        move_to_dest(move_source, destination_dir, move_dest_name)
+def extract_tar_gzip_archive(archive_path, destination_dir):
+    extract_tar_archive(archive_path, destination_dir, '-z')
 
 
 def get_handler(path):
     handlers = [
         (extract_zip_archive, '.zip .jar'),
         (extract_tar_archive, '.tar'),
-        (extract_tar_gz_archive, '.tar.gz .tgz'),
+        (extract_tar_gzip_archive, '.tar.gz .tgz'),
         (extract_disk_image, '.iso .dmg .sparseimage .sparsebundle')]
 
     for handler, extensions in handlers:
