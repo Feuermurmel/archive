@@ -41,7 +41,7 @@ def extract_disk_image(image_path, destination_dir):
                     member_path = os.path.join(mount_path, j)
 
                     # Ignore all the crap put into the average disk image.
-                    if j.startswith('.') or os.path.islink( member_path) or is_alias(member_path) or is_invisible(member_path):
+                    if j.startswith('.') or os.path.islink(member_path) or is_alias(member_path) or is_invisible(member_path):
                         log(f'Skipping {j}')
                     else:
                         command('ditto', member_path, os.path.join(copy_path, j))
