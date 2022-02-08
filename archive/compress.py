@@ -1,7 +1,8 @@
 import os
+import subprocess
 import tempfile
 
-from archive.util import command, move_to_dest, log
+from archive.util import move_to_dest, log
 
 
 def archive_file(path, destination_dir):
@@ -10,7 +11,7 @@ def archive_file(path, destination_dir):
 
         log('Creating archive ...')
 
-        def args():
+        def iter_args():
             yield 'ditto'
             yield '-c'
             yield '-k'
@@ -22,12 +23,12 @@ def archive_file(path, destination_dir):
             yield path
             yield archive_file
 
-        command(*args())
+        subprocess.check_call([*iter_args()])
 
         move_to_dest(archive_file, destination_dir, os.path.basename(path) + '.zip')
 
     log('Moving original file to the trash ...')
 
-    command('trash', path)
+    subprocess.check_call(['trash', path])
 
     log('Done.')

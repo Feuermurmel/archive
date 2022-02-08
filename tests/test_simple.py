@@ -38,7 +38,8 @@ def test_dmg(tmp_path):
     partition_name = 'Root Partition Name'
 
     # Create a .dmg image.
-    subprocess.check_call(['hdiutil', 'create', '-volname', partition_name, '-srcfolder', str(src_path), '-ov', '-format', 'UDZO', str(archive_path)])
+    subprocess.check_call(
+        ['hdiutil', 'create', '-volname', partition_name, '-srcfolder', str(src_path), '-ov', '-format', 'UDZO', str(archive_path)])
 
     # Extract the image.
     subprocess.check_call(['archive', '-e', str(archive_path)])

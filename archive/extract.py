@@ -1,16 +1,18 @@
+import functools
 import os
 import shutil
+import subprocess
 import tempfile
 
-from archive.util import UserError, command, move_to_dest, log
+from archive.util import UserError, move_to_dest, log
 
 
 def is_alias(path):
-    return int(command('GetFileInfo', '-aa', path).decode()) == 1
+    return int(subprocess.check_output(['GetFileInfo', '-aa', path], encoding='utf-8')) == 1
 
 
 def is_invisible(path):
-    return int(command('GetFileInfo', '-av', path).decode()) == 1
+    return int(subprocess.check_output(['GetFileInfo', '-av', path], encoding='utf-8')) == 1
 
 
 def extract_disk_image(image_path, destination_dir):
@@ -25,7 +27,11 @@ def extract_disk_image(image_path, destination_dir):
             log(f'Mounting {image_path} ...')
 
             # Blindly accepting any license agreement.
-            command('hdiutil', 'mount', '-readonly', '-nobrowse', '-mountroot', mount_root, image_path, input='Y\n'.encode())
+            subprocess.check_output(
+                ['hdiutil', 'mount', '-readonly', '-nobrowse', '-mountroot', mount_root, image_path],
+                input='Y\n',
+                encoding='utf-8',
+                capture_output=False)
 
             partitions = os.listdir(mount_root)
 
@@ -44,7 +50,8 @@ def extract_disk_image(image_path, destination_dir):
                     if j.startswith('.') or os.path.islink(member_path) or is_alias(member_path) or is_invisible(member_path):
                         log(f'Skipping {j}')
                     else:
-                        command('ditto', member_path, os.path.join(copy_path, j))
+                        subprocess.check_call(
+                            ['ditto', member_path, os.path.join(copy_path, j)])
 
             log('Moving items to destination folder ...')
 
@@ -77,7 +84,7 @@ def extract_disk_image(image_path, destination_dir):
                 # So we won't get confused if unmounting a partition also
                 # unmounts other partitions.
                 if os.path.exists(mount_path):
-                    command('hdiutil', 'detach', mount_path)
+                    subprocess.check_call(['hdiutil', 'detach', mount_path])
 
 
 def prepare_contents(extract_dir):
@@ -106,7 +113,8 @@ def extract_zip_archive(archive_path, destination_dir):
 
         log(f'Extracting file {archive_path} ...')
 
-        command('ditto', '-x', '-k', archive_path, extract_dir)
+        subprocess.check_call(
+            ['ditto', '-x', '-k', archive_path, extract_dir])
 
         contents = prepare_contents(extract_dir)
 
@@ -122,7 +130,7 @@ def extract_zip_archive(archive_path, destination_dir):
         move_to_dest(move_source, destination_dir, move_dest_name)
 
 
-def extract_tar_archive(archive_path, destination_dir, compression_option=None):
+def extract_tar_archive(archive_path, destination_dir, *, compression_arg=None):
     with tempfile.TemporaryDirectory() as temp_dir:
         extract_dir = os.path.join(temp_dir, 'extracted')
 
@@ -133,10 +141,10 @@ def extract_tar_archive(archive_path, destination_dir, compression_option=None):
         def iter_args():
             yield from ['tar', '-x', '-C', extract_dir, '-f', archive_path]
 
-            if compression_option is not None:
-                yield compression_option
+            if compression_arg is not None:
+                yield compression_arg
 
-        command(*iter_args())
+        subprocess.check_call([*iter_args()])
 
         contents = prepare_contents(extract_dir)
 
@@ -152,18 +160,14 @@ def extract_tar_archive(archive_path, destination_dir, compression_option=None):
         move_to_dest(move_source, destination_dir, move_dest_name)
 
 
-def extract_tar_gzip_archive(archive_path, destination_dir):
-    extract_tar_archive(archive_path, destination_dir, '-z')
-
-
 def get_handler(path):
     handlers = [
-        (extract_zip_archive, '.zip .jar'),
-        (extract_tar_archive, '.tar'),
-        (extract_tar_gzip_archive, '.tar.gz .tgz'),
-        (extract_disk_image, '.iso .dmg .sparseimage .sparsebundle')]
+        ('.zip .jar', extract_zip_archive),
+        ('.tar', extract_tar_archive),
+        ('.tar.gz .tgz', functools.partial(extract_tar_archive, compression_arg='-z')),
+        ('.iso .dmg .sparseimage .sparsebundle', extract_disk_image)]
 
-    for handler, extensions in handlers:
+    for extensions, handler in handlers:
         for extension in extensions.split():
             if path.endswith(extension):
                 return handler
@@ -176,6 +180,6 @@ def extract_file(path, destination_dir):
 
     log('Moving original file to the trash ...')
 
-    command('trash', path)
+    subprocess.check_call(['trash', path])
 
     log('Done.')

@@ -1,6 +1,5 @@
 import itertools
 import os
-import subprocess
 import sys
 
 
@@ -13,19 +12,7 @@ class UserError(Exception):
         super().__init__(message.format(*args))
 
 
-def command(*args, input=None):
-    proc = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
-    res, _ = proc.communicate(input)
-
-    if proc.returncode:
-        args_str = ' '.join(args)
-
-        raise UserError(f'Command failed: {args_str}')
-
-    return res
-
-
-def find_unused_name(base_path):
+def _find_unused_name(base_path):
     base_path, base_name = os.path.split(base_path)
     base_name, ext = os.path.splitext(base_name)
 
@@ -43,7 +30,7 @@ def find_unused_name(base_path):
 
 
 def move_to_dest(source_dir, dest_dir, base_name):
-    move_dest = find_unused_name(os.path.join(dest_dir, base_name))
+    move_dest = _find_unused_name(os.path.join(dest_dir, base_name))
 
     log(f'Moving final file to {move_dest} ...')
 
