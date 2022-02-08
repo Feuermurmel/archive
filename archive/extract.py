@@ -15,6 +15,16 @@ def is_invisible(path):
     return int(subprocess.check_output(['GetFileInfo', '-av', path], encoding='utf-8')) == 1
 
 
+def copy_compress_to_dest(source_path, dest_dir, dest_name):
+    log(f'Applying filesystem compression ...')
+
+    with tempfile.TemporaryDirectory() as temp_dir:
+        copy_dest = os.path.join(temp_dir, 'copy')
+
+        subprocess.check_call(['ditto', '--hfsCompression', source_path, copy_dest])
+        move_to_dest(copy_dest, dest_dir, dest_name)
+
+
 def extract_disk_image(image_path, destination_dir):
     with tempfile.TemporaryDirectory() as temp_dir:
         mount_root = os.path.join(temp_dir, 'mounts')
@@ -74,7 +84,7 @@ def extract_disk_image(image_path, destination_dir):
                     move_source = os.path.join(partition_path, member)
                     move_dest_name = member
 
-            move_to_dest(move_source, destination_dir, move_dest_name)
+            copy_compress_to_dest(move_source, destination_dir, move_dest_name)
         finally:
             log('Unmounting image ...')
 
@@ -127,7 +137,7 @@ def extract_zip_archive(archive_path, destination_dir):
             move_source = os.path.join(extract_dir, content)
             move_dest_name = content
 
-        move_to_dest(move_source, destination_dir, move_dest_name)
+        copy_compress_to_dest(move_source, destination_dir, move_dest_name)
 
 
 def extract_tar_archive(archive_path, destination_dir, *, compression_arg=None):
@@ -157,7 +167,7 @@ def extract_tar_archive(archive_path, destination_dir, *, compression_arg=None):
             move_source = os.path.join(extract_dir, content)
             move_dest_name = content
 
-        move_to_dest(move_source, destination_dir, move_dest_name)
+        copy_compress_to_dest(move_source, destination_dir, move_dest_name)
 
 
 def get_handler(path):

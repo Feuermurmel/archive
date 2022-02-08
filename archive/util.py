@@ -29,9 +29,9 @@ def _find_unused_name(base_path):
             return path
 
 
-def move_to_dest(source_dir, dest_dir, base_name):
-    move_dest = _find_unused_name(os.path.join(dest_dir, base_name))
+def move_to_dest(source_path, dest_dir, dest_name):
+    move_dest = _find_unused_name(os.path.join(dest_dir, dest_name))
 
     log(f'Moving final file to {move_dest} ...')
 
-    os.rename(source_dir, move_dest)
+    os.rename(source_path, move_dest)
