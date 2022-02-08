@@ -36,3 +36,15 @@ def test_extract_on_non_root_fs(different_fs):
     subprocess.check_call(['archive', '-e', str(archive_path)])
 
     assert (different_fs / 'test').is_dir()
+
+
+def test_archive_on_non_root_fs(different_fs):
+    dir_path = different_fs / 'test'
+
+    dir_path.mkdir()
+    (dir_path / 'foo').write_text('foo')
+
+    # Try to create the archive.
+    subprocess.check_call(['archive', str(dir_path)])
+
+    assert (different_fs / 'test.zip').is_file()
