@@ -3,6 +3,8 @@ import subprocess
 
 import pytest
 
+from tests.conftest_utils import create_dmg
+
 
 def test_round_trip_zip(tmp_path):
     dir_path = tmp_path / 'test'
@@ -28,18 +30,16 @@ def test_round_trip_zip(tmp_path):
 
 
 def test_dmg(tmp_path):
-    src_path = tmp_path / 'src'
-    src_path.mkdir()
+    src_dir = tmp_path / 'src'
+    src_dir.mkdir()
 
-    (src_path / 'foo').write_text('foo')
-    (src_path / 'bar').write_text('bar')
+    (src_dir / 'foo').write_text('foo')
+    (src_dir / 'bar').write_text('bar')
 
     archive_path = tmp_path / 'image.dmg'
     partition_name = 'Root Partition Name'
 
-    # Create a .dmg image.
-    subprocess.check_call(
-        ['hdiutil', 'create', '-volname', partition_name, '-srcfolder', str(src_path), '-ov', '-format', 'UDZO', str(archive_path)])
+    create_dmg(archive_path, src_dir, partition_name)
 
     # Extract the image.
     subprocess.check_call(['archive', '-e', str(archive_path)])

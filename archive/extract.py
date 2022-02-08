@@ -4,7 +4,7 @@ import shutil
 import subprocess
 import tempfile
 
-from archive.util import UserError, move_to_dest, log
+from archive.util import UserError, move_to_dest, log, mounted_disk_image
 
 
 def is_alias(path):
@@ -33,16 +33,7 @@ def extract_disk_image(image_path, destination_dir):
         os.mkdir(mount_root)
         os.mkdir(copy_root)
 
-        try:
-            log(f'Mounting {image_path} ...')
-
-            # Blindly accepting any license agreement.
-            subprocess.check_output(
-                ['hdiutil', 'mount', '-readonly', '-nobrowse', '-mountroot', mount_root, image_path],
-                input='Y\n',
-                encoding='utf-8',
-                capture_output=False)
-
+        with mounted_disk_image(image_path, mount_root):
             partitions = os.listdir(mount_root)
 
             for i in partitions:
@@ -85,16 +76,6 @@ def extract_disk_image(image_path, destination_dir):
                     move_dest_name = member
 
             copy_compress_to_dest(move_source, destination_dir, move_dest_name)
-        finally:
-            log('Unmounting image ...')
-
-            for i in os.listdir(mount_root):
-                mount_path = os.path.join(mount_root, i)
-
-                # So we won't get confused if unmounting a partition also
-                # unmounts other partitions.
-                if os.path.exists(mount_path):
-                    subprocess.check_call(['hdiutil', 'detach', mount_path])
 
 
 def prepare_contents(extract_dir):
