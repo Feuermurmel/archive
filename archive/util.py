@@ -3,6 +3,7 @@ import contextlib
 import os
 import sys
 import subprocess
+import tempfile
 
 
 def log(message):
@@ -29,6 +30,10 @@ def _find_unused_name(base_path):
 
         if not os.path.exists(path):
             return path
+
+
+def temp_dir_in_dest_dir(dest_dir):
+    return tempfile.TemporaryDirectory(prefix='archive.', dir=dest_dir, suffix='.tmp')
 
 
 def move_to_dest(source_path, dest_dir, dest_name):

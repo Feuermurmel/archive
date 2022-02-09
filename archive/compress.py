@@ -2,11 +2,11 @@ import os
 import subprocess
 import tempfile
 
-from archive.util import move_to_dest, log
+from archive.util import move_to_dest, log, temp_dir_in_dest_dir
 
 
 def archive_file(path, dest_dir):
-    with tempfile.TemporaryDirectory(prefix='archive.', dir=dest_dir) as temp_dir:
+    with temp_dir_in_dest_dir(dest_dir) as temp_dir:
         archive_file = os.path.join(temp_dir, 'archive.zip')
 
         log('Creating archive ...')

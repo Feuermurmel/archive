@@ -4,7 +4,8 @@ import shutil
 import subprocess
 import tempfile
 
-from archive.util import UserError, move_to_dest, log, mounted_disk_image
+from archive.util import UserError, move_to_dest, log, mounted_disk_image, \
+    temp_dir_in_dest_dir
 
 
 def is_alias(path):
@@ -18,7 +19,7 @@ def is_invisible(path):
 def copy_compress_to_dest(source_path, dest_dir, dest_name):
     log(f'Applying filesystem compression ...')
 
-    with tempfile.TemporaryDirectory(prefix='archive.', dir=dest_dir) as temp_dir:
+    with temp_dir_in_dest_dir(dest_dir) as temp_dir:
         copy_dest = os.path.join(temp_dir, 'copy')
 
         subprocess.check_call(['ditto', '--hfsCompression', source_path, copy_dest])
