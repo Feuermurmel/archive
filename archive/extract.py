@@ -20,7 +20,7 @@ def copy_compress_to_dest(source_path, dest_dir, dest_name):
     log(f'Applying file system compression...')
 
     with temp_dir_in_dest_dir(dest_dir) as temp_dir:
-        copy_dest = os.path.join(temp_dir, 'copy')
+        copy_dest = temp_dir / 'copy'
 
         subprocess.check_call(['ditto', '--hfsCompression', source_path, copy_dest])
         move_to_dest(copy_dest, dest_dir, dest_name)
@@ -164,14 +164,17 @@ def get_handler(path):
             if path.endswith(extension):
                 return handler
 
-    raise UserError(f'Unknown file type: {path}')
+    return None
 
 
-def extract_file(path, destination_dir):
-    get_handler(path)(path, destination_dir)
+def extract_archive(path, destination_dir):
+    handler = get_handler(path)
+
+    if handler is None:
+        raise UserError(f'Unknown file type: {path}')
+    else:
+        handler(path, destination_dir)
 
     log('Moving original file to the trash...')
 
     subprocess.check_call(['trash', path])
-
-    log('Done.')

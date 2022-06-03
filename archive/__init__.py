@@ -1,10 +1,9 @@
 import argparse
-import os
-import pathlib
 import sys
+from pathlib import Path
 
-from archive.archive import archive_file
-from archive.extract import extract_file
+from archive.archive import archive_files
+from archive.extract import extract_archive
 from archive.util import log, UserError
 
 
@@ -20,29 +19,29 @@ def parse_args():
     parser.add_argument(
         '-d',
         '--destination-dir',
-        type=pathlib.Path,
+        type=Path,
         help='Place the archive file or extracted files into this directory. '
              'Default to the directory that contains the source.')
 
     parser.add_argument(
         'source_paths',
         nargs='+',
-        type=pathlib.Path)
+        type=Path)
 
     return parser.parse_args()
 
 
 def main(extract, source_paths, destination_dir):
     for i in source_paths:
-        source_path = os.path.normpath(i)
+        source_path = i.resolve()
 
         if destination_dir is None:
-            destination_dir = os.path.dirname(source_path)
+            destination_dir = source_path.parent
 
         if extract:
-            extract_file(source_path, str(destination_dir))
+            extract_archive(str(source_path), str(destination_dir))
         else:
-            archive_file(source_path, str(destination_dir))
+            archive_files(str(source_path), str(destination_dir))
 
     log('Done.')
 

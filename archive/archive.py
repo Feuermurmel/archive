@@ -1,13 +1,12 @@
 import os
 import subprocess
-import tempfile
 
 from archive.util import move_to_dest, log, temp_dir_in_dest_dir
 
 
-def archive_file(path, dest_dir):
+def archive_files(path, dest_dir):
     with temp_dir_in_dest_dir(dest_dir) as temp_dir:
-        archive_file = os.path.join(temp_dir, 'archive.zip')
+        archive_file = temp_dir / 'archive.zip'
 
         log('Creating archive...')
 
