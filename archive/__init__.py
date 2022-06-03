@@ -3,7 +3,7 @@ import os
 import pathlib
 import sys
 
-from archive.compress import archive_file
+from archive.archive import archive_file
 from archive.extract import extract_file
 from archive.util import log, UserError
 
