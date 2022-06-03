@@ -39,14 +39,14 @@ def temp_dir_in_dest_dir(dest_dir):
 def move_to_dest(source_path, dest_dir, dest_name):
     move_dest = _find_unused_name(os.path.join(dest_dir, dest_name))
 
-    log(f'Moving final file to {move_dest} ...')
+    log(f'Moving final file to {move_dest}...')
 
     os.rename(source_path, move_dest)
 
 
 @contextlib.contextmanager
 def mounted_disk_image(image_path, mount_root, *, writable=False):
-    log(f'Mounting {image_path} ...')
+    log(f'Mounting {image_path}...')
 
     def iter_args():
         yield 'hdiutil'
@@ -70,7 +70,7 @@ def mounted_disk_image(image_path, mount_root, *, writable=False):
     try:
         yield
     finally:
-        log('Unmounting image ...')
+        log('Unmounting image...')
 
         for i in os.listdir(mount_root):
             mount_path = os.path.join(mount_root, i)

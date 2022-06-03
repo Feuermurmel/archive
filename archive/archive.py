@@ -9,7 +9,7 @@ def archive_file(path, dest_dir):
     with temp_dir_in_dest_dir(dest_dir) as temp_dir:
         archive_file = os.path.join(temp_dir, 'archive.zip')
 
-        log('Creating archive ...')
+        log('Creating archive...')
 
         def iter_args():
             yield 'ditto'
@@ -27,8 +27,6 @@ def archive_file(path, dest_dir):
 
         move_to_dest(archive_file, dest_dir, os.path.basename(path) + '.zip')
 
-    log('Moving original file to the trash ...')
+    log('Moving original file to the trash...')
 
     subprocess.check_call(['trash', path])
-
-    log('Done.')

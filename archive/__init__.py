@@ -44,6 +44,8 @@ def main(extract, source_paths, destination_dir):
         else:
             archive_file(source_path, str(destination_dir))
 
+    log('Done.')
+
 
 def entry_point():
     try:

@@ -17,7 +17,7 @@ def is_invisible(path):
 
 
 def copy_compress_to_dest(source_path, dest_dir, dest_name):
-    log(f'Applying filesystem compression ...')
+    log(f'Applying file system compression...')
 
     with temp_dir_in_dest_dir(dest_dir) as temp_dir:
         copy_dest = os.path.join(temp_dir, 'copy')
@@ -43,7 +43,7 @@ def extract_disk_image(image_path, destination_dir):
 
                 os.mkdir(copy_path)
 
-                log(f'Copying partition {i} ...')
+                log(f'Copying partition {i}...')
 
                 for j in os.listdir(mount_path):
                     member_path = os.path.join(mount_path, j)
@@ -55,7 +55,7 @@ def extract_disk_image(image_path, destination_dir):
                         subprocess.check_call(
                             ['ditto', member_path, os.path.join(copy_path, j)])
 
-            log('Moving items to destination folder ...')
+            log('Moving items to destination folder...')
 
             if len(partitions) > 1:
                 move_source = copy_root
@@ -103,7 +103,7 @@ def extract_zip_archive(archive_path, destination_dir):
 
         os.mkdir(extract_dir)
 
-        log(f'Extracting file {archive_path} ...')
+        log(f'Extracting file {archive_path}...')
 
         subprocess.check_call(
             ['ditto', '-x', '-k', archive_path, extract_dir])
@@ -128,7 +128,7 @@ def extract_tar_archive(archive_path, destination_dir, *, compression_arg=None):
 
         os.mkdir(extract_dir)
 
-        log(f'Extracting file {archive_path} ...')
+        log(f'Extracting file {archive_path}...')
 
         def iter_args():
             yield from ['tar', '-x', '-C', extract_dir, '-f', archive_path]
@@ -170,7 +170,7 @@ def get_handler(path):
 def extract_file(path, destination_dir):
     get_handler(path)(path, destination_dir)
 
-    log('Moving original file to the trash ...')
+    log('Moving original file to the trash...')
 
     subprocess.check_call(['trash', path])
 
