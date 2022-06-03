@@ -1,10 +1,18 @@
 import argparse
 import sys
+from enum import Enum
 from pathlib import Path
 
 from archive.archive import archive_files
+from archive.compress import apply_compression
 from archive.extract import extract_archive
 from archive.util import log, UserError
+
+
+class Mode(Enum):
+    archive = 'archive'
+    extract = 'extract'
+    compress = 'compress'
 
 
 def parse_args():
@@ -13,8 +21,18 @@ def parse_args():
     parser.add_argument(
         '-e',
         '--extract',
-        action='store_true',
+        action='store_const',
+        dest='mode',
+        const=Mode.extract,
+        default=Mode.archive,
         help='Try to extract an archive instead of creating one.')
+
+    parser.add_argument(
+        '--fs-compress',
+        action='store_const',
+        dest='mode',
+        const=Mode.compress,
+        help='Apply APFS file compression to the files.')
 
     parser.add_argument(
         '-d',
@@ -31,17 +49,21 @@ def parse_args():
     return parser.parse_args()
 
 
-def main(extract, source_paths, destination_dir):
+def main(mode, source_paths, destination_dir):
     for i in source_paths:
         source_path = i.resolve()
 
         if destination_dir is None:
             destination_dir = source_path.parent
 
-        if extract:
+        if mode is Mode.extract:
             extract_archive(str(source_path), str(destination_dir))
-        else:
+        elif mode is Mode.archive:
             archive_files(str(source_path), str(destination_dir))
+        else:
+            assert mode is Mode.compress
+
+            apply_compression(source_path)
 
     log('Done.')
 

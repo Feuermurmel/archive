@@ -76,3 +76,27 @@ def test_tar(tmp_path, compressed):
     # Check that the files exist under the right paths.
     assert (src_path / 'foo').read_text() == 'foo'
     assert (src_path / 'bar').read_text() == 'bar'
+
+
+def test_fs_compression(tmp_path):
+    src_dir = tmp_path / 'src'
+    src_dir.mkdir()
+
+    (src_dir / 'foo').write_text('foo')
+
+    # Apply compression.
+    subprocess.check_call(['archive', '--fs-compress', str(src_dir)])
+
+    # Simply check that the file wasn't modified or anything.
+    assert (src_dir / 'foo').read_text() == 'foo'
+
+
+def test_fs_compression_single_file(tmp_path):
+    src_file = tmp_path / 'src'
+    src_file.write_text('foo')
+
+    # Apply compression.
+    subprocess.check_call(['archive', '--fs-compress', str(src_file)])
+
+    # Simply check that the file wasn't modified or anything.
+    assert src_file.read_text() == 'foo'
