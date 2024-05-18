@@ -4,19 +4,20 @@ import os
 import subprocess
 import sys
 import tempfile
+from collections.abc import Iterator
 from pathlib import Path
 
 
-def log(message):
+def log(message: str) -> None:
     print(message, file=sys.stderr, flush=True)
 
 
 class UserError(Exception):
-    def __init__(self, message, *args):
+    def __init__(self, message: str, *args: object):
         super().__init__(message.format(*args))
 
 
-def _find_unused_name(base_path):
+def _find_unused_name(base_path: str) -> str:
     base_path, base_name = os.path.split(base_path)
     base_name, ext = os.path.splitext(base_name)
 
@@ -32,16 +33,18 @@ def _find_unused_name(base_path):
         if not os.path.exists(path):
             return path
 
+    assert False
+
 
 @contextlib.contextmanager
-def temp_dir_in_dest_dir(dest_dir: Path) -> Path:
+def temp_dir_in_dest_dir(dest_dir: str | Path) -> Iterator[Path]:
     with tempfile.TemporaryDirectory(
         prefix="archive.", dir=dest_dir, suffix=".tmp"
     ) as temp_dir:
         yield Path(temp_dir)
 
 
-def move_to_dest(source_path, dest_dir, dest_name):
+def move_to_dest(source_path: Path, dest_dir: str, dest_name: str) -> None:
     move_dest = _find_unused_name(os.path.join(dest_dir, dest_name))
 
     log(f"Moving final file to {move_dest}...")
@@ -50,10 +53,12 @@ def move_to_dest(source_path, dest_dir, dest_name):
 
 
 @contextlib.contextmanager
-def mounted_disk_image(image_path, mount_root, *, writable=False):
+def mounted_disk_image(
+    image_path: str | Path, mount_root: str | Path, *, writable: bool = False
+) -> Iterator[None]:
     log(f"Mounting {image_path}...")
 
-    def iter_args():
+    def iter_args() -> Iterator[str | Path]:
         yield "hdiutil"
         yield "mount"
 
@@ -66,9 +71,7 @@ def mounted_disk_image(image_path, mount_root, *, writable=False):
         yield image_path
 
     # Blindly accepting any license agreement.
-    subprocess.check_output(
-        [*iter_args()], input="Y\n", encoding="utf-8", capture_output=False
-    )
+    subprocess.run([*iter_args()], input="Y\n", encoding="utf-8", check=True)
 
     try:
         yield

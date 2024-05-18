@@ -1,7 +1,8 @@
 import subprocess
+from pathlib import Path
 
 
-def create_dmg(dmg_path, src_dir, partition_name):
+def create_dmg(dmg_path: Path, src_dir: Path, partition_name: str) -> None:
     subprocess.check_call(
         [
             "hdiutil",

@@ -3,6 +3,8 @@ import os
 import shutil
 import subprocess
 import tempfile
+from collections.abc import Callable
+from collections.abc import Iterator
 
 from archive.util import UserError
 from archive.util import log
@@ -11,21 +13,21 @@ from archive.util import move_to_dest
 from archive.util import temp_dir_in_dest_dir
 
 
-def is_alias(path):
+def is_alias(path: str) -> bool:
     return (
         int(subprocess.check_output(["GetFileInfo", "-aa", path], encoding="utf-8"))
         == 1
     )
 
 
-def is_invisible(path):
+def is_invisible(path: str) -> bool:
     return (
         int(subprocess.check_output(["GetFileInfo", "-av", path], encoding="utf-8"))
         == 1
     )
 
 
-def copy_compress_to_dest(source_path, dest_dir, dest_name):
+def copy_compress_to_dest(source_path: str, dest_dir: str, dest_name: str) -> None:
     log(f"Applying file system compression...")
 
     with temp_dir_in_dest_dir(dest_dir) as temp_dir:
@@ -35,7 +37,7 @@ def copy_compress_to_dest(source_path, dest_dir, dest_name):
         move_to_dest(copy_dest, dest_dir, dest_name)
 
 
-def extract_disk_image(image_path, destination_dir):
+def extract_disk_image(image_path: str, destination_dir: str) -> None:
     with tempfile.TemporaryDirectory() as temp_dir:
         mount_root = os.path.join(temp_dir, "mounts")
         copy_root = os.path.join(temp_dir, "extracted")
@@ -93,8 +95,8 @@ def extract_disk_image(image_path, destination_dir):
             copy_compress_to_dest(move_source, destination_dir, move_dest_name)
 
 
-def prepare_contents(extract_dir):
-    def fn():
+def prepare_contents(extract_dir: str) -> list[str]:
+    def fn() -> Iterator[str]:
         for i in os.listdir(extract_dir):
             if i.startswith("."):
                 log(f"Removing {i}")
@@ -111,7 +113,7 @@ def prepare_contents(extract_dir):
     return list(fn())
 
 
-def extract_zip_archive(archive_path, destination_dir):
+def extract_zip_archive(archive_path: str, destination_dir: str) -> None:
     with tempfile.TemporaryDirectory() as temp_dir:
         extract_dir = os.path.join(temp_dir, "extracted")
 
@@ -135,7 +137,9 @@ def extract_zip_archive(archive_path, destination_dir):
         copy_compress_to_dest(move_source, destination_dir, move_dest_name)
 
 
-def extract_tar_archive(archive_path, destination_dir, *, compression_arg=None):
+def extract_tar_archive(
+    archive_path: str, destination_dir: str, *, compression_arg: str | None = None
+) -> None:
     with tempfile.TemporaryDirectory() as temp_dir:
         extract_dir = os.path.join(temp_dir, "extracted")
 
@@ -143,7 +147,7 @@ def extract_tar_archive(archive_path, destination_dir, *, compression_arg=None):
 
         log(f"Extracting file {archive_path}...")
 
-        def iter_args():
+        def iter_args() -> Iterator[str]:
             yield from ["tar", "-x", "-C", extract_dir, "-f", archive_path]
 
             if compression_arg is not None:
@@ -165,8 +169,8 @@ def extract_tar_archive(archive_path, destination_dir, *, compression_arg=None):
         copy_compress_to_dest(move_source, destination_dir, move_dest_name)
 
 
-def get_handler(path):
-    handlers = [
+def get_handler(path: str) -> Callable[[str, str], None] | None:
+    handlers: list[tuple[str, Callable[[str, str], None]]] = [
         (".zip .jar", extract_zip_archive),
         (".tar", extract_tar_archive),
         (".tar.gz .tgz", functools.partial(extract_tar_archive, compression_arg="-z")),
@@ -181,7 +185,7 @@ def get_handler(path):
     return None
 
 
-def extract_archive(path, destination_dir):
+def extract_archive(path: str, destination_dir: str) -> None:
     handler = get_handler(path)
 
     if handler is None:

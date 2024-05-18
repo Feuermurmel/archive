@@ -1,12 +1,13 @@
 import shutil
 import subprocess
+from pathlib import Path
 
 import pytest
 
 from tests.conftest_utils import create_dmg
 
 
-def test_round_trip_zip(tmp_path):
+def test_round_trip_zip(tmp_path: Path) -> None:
     dir_path = tmp_path / "test"
     archive_path = tmp_path / "test.zip"
 
@@ -29,7 +30,7 @@ def test_round_trip_zip(tmp_path):
     assert (dir_path / "bar").read_text() == "bar"
 
 
-def test_dmg(tmp_path):
+def test_dmg(tmp_path: Path) -> None:
     src_dir = tmp_path / "src"
     src_dir.mkdir()
 
@@ -50,7 +51,7 @@ def test_dmg(tmp_path):
 
 
 @pytest.mark.parametrize("compressed", [False, True])
-def test_tar(tmp_path, compressed):
+def test_tar(tmp_path: Path, compressed: bool) -> None:
     src_path = tmp_path / "src"
     src_path.mkdir()
 
@@ -82,7 +83,7 @@ def test_tar(tmp_path, compressed):
     assert (src_path / "bar").read_text() == "bar"
 
 
-def test_fs_compression(tmp_path):
+def test_fs_compression(tmp_path: Path) -> None:
     src_dir = tmp_path / "src"
     src_dir.mkdir()
 
@@ -95,7 +96,7 @@ def test_fs_compression(tmp_path):
     assert (src_dir / "foo").read_text() == "foo"
 
 
-def test_fs_compression_single_file(tmp_path):
+def test_fs_compression_single_file(tmp_path: Path) -> None:
     src_file = tmp_path / "src"
     src_file.write_text("foo")
 

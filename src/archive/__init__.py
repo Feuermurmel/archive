@@ -16,7 +16,7 @@ class Mode(Enum):
     compress = "compress"
 
 
-def parse_args():
+def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
 
     parser.add_argument(
@@ -50,7 +50,7 @@ def parse_args():
     return parser.parse_args()
 
 
-def main(mode, source_paths, destination_dir):
+def main(mode: Mode, source_paths: list[Path], destination_dir: Path | None) -> None:
     for i in source_paths:
         source_path = i.resolve()
 
@@ -69,7 +69,7 @@ def main(mode, source_paths, destination_dir):
     log("Done.")
 
 
-def entry_point():
+def entry_point() -> None:
     try:
         main(**vars(parse_args()))
     except KeyboardInterrupt:

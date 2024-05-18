@@ -9,6 +9,14 @@ dev = ["pytest", "mypy"]
 [project.scripts]
 archive = "archive:entry_point"
 
+[tool.mypy]
+mypy_path = "$MYPY_CONFIG_FILE_DIR/src:$MYPY_CONFIG_FILE_DIR/tests"
+files = ["src", "tests"]
+strict = true
+warn_unreachable = true
+extra_checks = true
+enable_error_code = "possibly-undefined, redundant-expr, truthy-iterable, truthy-bool"
+
 [tool.pytest.ini_options]
 testpaths = "tests"
 

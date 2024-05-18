@@ -1,15 +1,18 @@
 import os
 import subprocess
 import zipfile
+from collections.abc import Iterator
+from pathlib import Path
 
 import pytest
+from _pytest.tmpdir import TempPathFactory
 
 from archive.util import mounted_disk_image
 from tests.conftest_utils import create_dmg
 
 
 @pytest.fixture
-def different_fs(tmp_path_factory):
+def different_fs(tmp_path_factory: TempPathFactory) -> Iterator[Path]:
     temp_dir = tmp_path_factory.mktemp("different_fs")
     dmg_path = temp_dir / "image.dmg"
     mount_root = temp_dir / "mount_root"
@@ -25,7 +28,7 @@ def different_fs(tmp_path_factory):
         yield mount_root / partition_name
 
 
-def test_extract_on_non_root_fs(different_fs):
+def test_extract_on_non_root_fs(different_fs: Path) -> None:
     archive_path = different_fs / "test.zip"
 
     with zipfile.ZipFile(archive_path, mode="w") as zip:
@@ -38,7 +41,7 @@ def test_extract_on_non_root_fs(different_fs):
     assert (different_fs / "test").is_dir()
 
 
-def test_archive_on_non_root_fs(different_fs):
+def test_archive_on_non_root_fs(different_fs: Path) -> None:
     dir_path = different_fs / "test"
 
     dir_path.mkdir()

@@ -1,6 +1,7 @@
 import contextlib
 import os
 import subprocess
+from collections.abc import Iterator
 from pathlib import Path
 
 from archive.util import log
@@ -8,7 +9,7 @@ from archive.util import temp_dir_in_dest_dir
 
 
 @contextlib.contextmanager
-def _open_dir(name, parent_fd=None):
+def _open_dir(name: str | Path, parent_fd: int | None = None) -> Iterator[int]:
     fd = os.open(name, os.O_RDONLY, dir_fd=parent_fd)
 
     try:
@@ -17,7 +18,7 @@ def _open_dir(name, parent_fd=None):
         os.close(fd)
 
 
-def _merge_directory_into_fn(src_fd, dest_fd):
+def _merge_directory_into_fn(src_fd: int, dest_fd: int) -> None:
     for i in os.scandir(src_fd):
         if i.is_dir(follow_symlinks=False):
             with (
@@ -29,7 +30,7 @@ def _merge_directory_into_fn(src_fd, dest_fd):
             os.rename(i.name, i.name, src_dir_fd=src_fd, dst_dir_fd=dest_fd)
 
 
-def apply_compression(path: Path):
+def apply_compression(path: Path) -> None:
     log(f"Applying file system compression...")
 
     with temp_dir_in_dest_dir(path.parent) as temp_dir:
