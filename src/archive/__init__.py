@@ -6,45 +6,46 @@ from pathlib import Path
 from archive.archive import archive_files
 from archive.compress import apply_compression
 from archive.extract import extract_archive
-from archive.util import log, UserError
+from archive.util import UserError
+from archive.util import log
 
 
 class Mode(Enum):
-    archive = 'archive'
-    extract = 'extract'
-    compress = 'compress'
+    archive = "archive"
+    extract = "extract"
+    compress = "compress"
 
 
 def parse_args():
     parser = argparse.ArgumentParser()
 
     parser.add_argument(
-        '-e',
-        '--extract',
-        action='store_const',
-        dest='mode',
+        "-e",
+        "--extract",
+        action="store_const",
+        dest="mode",
         const=Mode.extract,
         default=Mode.archive,
-        help='Try to extract an archive instead of creating one.')
+        help="Try to extract an archive instead of creating one.",
+    )
 
     parser.add_argument(
-        '--fs-compress',
-        action='store_const',
-        dest='mode',
+        "--fs-compress",
+        action="store_const",
+        dest="mode",
         const=Mode.compress,
-        help='Apply APFS file compression to the files.')
+        help="Apply APFS file compression to the files.",
+    )
 
     parser.add_argument(
-        '-d',
-        '--destination-dir',
+        "-d",
+        "--destination-dir",
         type=Path,
-        help='Place the archive file or extracted files into this directory. '
-             'Default to the directory that contains the source.')
+        help="Place the archive file or extracted files into this directory. "
+        "Default to the directory that contains the source.",
+    )
 
-    parser.add_argument(
-        'source_paths',
-        nargs='+',
-        type=Path)
+    parser.add_argument("source_paths", nargs="+", type=Path)
 
     return parser.parse_args()
 
@@ -65,15 +66,15 @@ def main(mode, source_paths, destination_dir):
 
             apply_compression(source_path)
 
-    log('Done.')
+    log("Done.")
 
 
 def entry_point():
     try:
         main(**vars(parse_args()))
     except KeyboardInterrupt:
-        log('Operation interrupted.')
+        log("Operation interrupted.")
         sys.exit(1)
     except UserError as e:
-        log(f'error: {e}')
+        log(f"error: {e}")
         sys.exit(2)

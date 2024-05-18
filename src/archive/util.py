@@ -1,8 +1,8 @@
-import itertools
 import contextlib
+import itertools
 import os
-import sys
 import subprocess
+import sys
 import tempfile
 from pathlib import Path
 
@@ -24,7 +24,7 @@ def _find_unused_name(base_path):
         if i == 1:
             base_name_count = base_name
         else:
-            base_name_count = '{}-{}'.format(base_name, i)
+            base_name_count = "{}-{}".format(base_name, i)
 
         name = base_name_count + ext
         path = os.path.join(base_path, name)
@@ -35,45 +35,45 @@ def _find_unused_name(base_path):
 
 @contextlib.contextmanager
 def temp_dir_in_dest_dir(dest_dir: Path) -> Path:
-    with tempfile.TemporaryDirectory(prefix='archive.', dir=dest_dir, suffix='.tmp') as temp_dir:
+    with tempfile.TemporaryDirectory(
+        prefix="archive.", dir=dest_dir, suffix=".tmp"
+    ) as temp_dir:
         yield Path(temp_dir)
 
 
 def move_to_dest(source_path, dest_dir, dest_name):
     move_dest = _find_unused_name(os.path.join(dest_dir, dest_name))
 
-    log(f'Moving final file to {move_dest}...')
+    log(f"Moving final file to {move_dest}...")
 
     os.rename(source_path, move_dest)
 
 
 @contextlib.contextmanager
 def mounted_disk_image(image_path, mount_root, *, writable=False):
-    log(f'Mounting {image_path}...')
+    log(f"Mounting {image_path}...")
 
     def iter_args():
-        yield 'hdiutil'
-        yield 'mount'
+        yield "hdiutil"
+        yield "mount"
 
         if writable:
-            yield '-readonly'
+            yield "-readonly"
 
-        yield '-nobrowse'
-        yield '-mountroot'
+        yield "-nobrowse"
+        yield "-mountroot"
         yield mount_root
         yield image_path
 
     # Blindly accepting any license agreement.
     subprocess.check_output(
-        [*iter_args()],
-        input='Y\n',
-        encoding='utf-8',
-        capture_output=False)
+        [*iter_args()], input="Y\n", encoding="utf-8", capture_output=False
+    )
 
     try:
         yield
     finally:
-        log('Unmounting image...')
+        log("Unmounting image...")
 
         for i in os.listdir(mount_root):
             mount_path = os.path.join(mount_root, i)
@@ -81,4 +81,4 @@ def mounted_disk_image(image_path, mount_root, *, writable=False):
             # So we won't get confused if unmounting a partition also
             # unmounts other partitions.
             if os.path.exists(mount_path):
-                subprocess.check_call(['hdiutil', 'detach', mount_path])
+                subprocess.check_call(["hdiutil", "detach", mount_path])
