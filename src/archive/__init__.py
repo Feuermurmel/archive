@@ -50,21 +50,23 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+def process_path(mode: Mode, source_path: Path, destination_dir: Path | None) -> None:
+    if destination_dir is None:
+        destination_dir = source_path.parent
+
+    if mode is Mode.extract:
+        extract_archive(str(source_path), str(destination_dir))
+    elif mode is Mode.archive:
+        archive_files(str(source_path), str(destination_dir))
+    else:
+        assert mode is Mode.compress
+
+        apply_compression(source_path)
+
+
 def main(mode: Mode, source_paths: list[Path], destination_dir: Path | None) -> None:
     for i in source_paths:
-        source_path = i.resolve()
-
-        if destination_dir is None:
-            destination_dir = source_path.parent
-
-        if mode is Mode.extract:
-            extract_archive(str(source_path), str(destination_dir))
-        elif mode is Mode.archive:
-            archive_files(str(source_path), str(destination_dir))
-        else:
-            assert mode is Mode.compress
-
-            apply_compression(source_path)
+        process_path(mode, i.resolve(), destination_dir)
 
     log("Done.")
 
