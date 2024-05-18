@@ -1,0 +1,13 @@
+[project]
+name = "archive"
+version = "0.1.0"
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["pytest", "mypy"]
+
+[project.scripts]
+archive = "archive:entry_point"
+
+[tool.pytest.ini_options]
+testpaths = "tests"

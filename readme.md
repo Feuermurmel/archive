@@ -14,7 +14,6 @@ While extracting, it also safeguards against archive files which contain more th
 ## Development Setup
 
 ```
-python3 -m venv venv
-. venv/bin/activate
-pip install -e '.[dev]'
+pre-commit install
+make venv
 ```
